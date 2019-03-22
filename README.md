@@ -3,6 +3,9 @@
 前端使用静态文件, 后端与指定接口进行通信.
 部分配置保存于客户端
 
+![屏幕截图1](https://github.com/yanmingsohu/talon/blob/master/screen1.jpg)
+![屏幕截图2](https://github.com/yanmingsohu/talon/blob/master/screen2.jpg)
+
 
 * ok 文件被改变后读取当前文件进入临时editor,并显示出不同之处
 * ok 刷新目录

@@ -1,0 +1,25 @@
+.ace_content {
+  background-color: #010138;
+  color: #eee;
+}
+.ace_editor * {
+  font-family: Consolas,simhei,Monaco,"Courier New",Hei;
+}
+.ace_gutter-layer {
+  background-color: #241573;
+}
+.talon_tab_content .ace_editor {
+  flex: 1;
+  margin: 0;
+}
+.talon_tab_content .minimap {
+}
+.ace_gutter-cell.bookmark {
+  background-color: brown;
+}
+.ace_autocomplete .ace_completion-highlight {
+  color: red !important;
+}
+.ace_autocomplete .ace_selected {
+  background-color: #333 !important;
+}

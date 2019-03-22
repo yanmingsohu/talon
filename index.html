@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta content="text/html; charset=utf-8" http-equiv="content-type">
+  <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+
+  <title>Talon, Online IDE v[talon_version]</title>
+
+  <link href="theme-vintage/talon.css" id='talon_style_ide' rel="stylesheet" type="text/css">
+  <link href="theme-vintage/ace.css" id='talon_style_ace' rel="stylesheet" type="text/css">
+  <link href="theme-vintage/tree.css" id='talon_style_ztree' rel="stylesheet" type="text/css">
+
+  <script src='index-lib/jquery-2.1.4.min.js'></script>
+  <script src='index-lib/jquery.loadscript.min.js'></script>
+  <script src='index-lib/keys.min.js'></script>
+  <script src='index-lib/difflib-browser.js'></script> <!-- https://github.com/qiao/difflib.js -->
+  <script src='index-lib/filedrop-min.js'></script> <!-- https://github.com/ProgerXP/FileDrop -->
+  <script src='zTree_v3/js/jquery.ztree.all.min.js'></script>
+  <script src='ide-framework/talon.js'></script>
+  <script src='ide-framework/menu-event.js'></script>
+</head>
+<body>
+<!-- ============================== 主框架 ================================== -->
+
+  <div class='talon_menu talon_sys_menu_bar'>
+    <span class='talon_menu_item' id='talon_sub_menu_file' lang='m0001'>File</span>
+    <span class='talon_menu_item' id='talon_sub_menu_edit' lang='m0002'>Edit</span>
+    <span class='talon_menu_item' id='talon_sub_menu_view' lang='m0003'>View</span>
+    <span class='talon_menu_item' id='talon_sub_menu_select' lang='m0004'>Selection</span>
+    <span class='talon_menu_item' id='talon_sub_menu_find' lang='m0005'>Find</span>
+    <span class='talon_menu_item' id='talon_sub_menu_beau' lang='m1008'>Beautifier</span>
+    <span class='talon_menu_item' id='talon_sub_menu_lang' lang='m0006'>Language</span>
+    <span class='talon_menu_item' id='talon_sub_menu_help' lang='m0007'>Help</span>
+  </div>
+
+  <div class='talon_working'>
+    <div class='talon_file_tree talon_box_border'
+         style='border-right: 0; margin-right: 0;'></div>
+
+    <div class='talon_rl_silder' style='margin-bottom: 5px;
+         background-color: #e8f52c;'></div>
+
+    <div class='talon_file_tabs'>
+      <div class='talon_file_tab_name'></div>
+      <div class='talon_file_tab_content talon_box_border'></div>
+    </div>
+  </div>
+
+  <div class="talon_find_file talon_hide">
+    <div class='talon_box_border'>
+      <div class='talon_row'>
+        <span class='txt' lang='m0008'>Find in Current Buffer</span>
+        <div class='talon_column_all count txt'></div>
+        <span class='tool txt' lang='m0009'>Finding with Options:</span>
+        <button title='Use regex' class='talon small disabled regex'>.*</button>
+        <button title='Preserve Case' class='talon small disabled case'>Aa</button>
+        <button title='Whole word' class='talon small disabled whole'>&para;</button>
+      </div>
+      <div class='talon_row'>
+        <input class='talon talon_column_all find_txt'
+          placeholder='Find in current buffer' tabindex='1'/>
+        <button class='talon find' tabindex='3' lang='m000A'>Find</button>
+        <button class='talon find_all' tabindex='4' lang='m000B'>Find All</button>
+      </div>
+      <div class='talon_row'>
+        <input class='talon talon_column_all replace_txt'
+          placeholder='Replace in current buffer' tabindex='2'/>
+        <button class='talon replace' tabindex='5' lang='m000C'>Replace</button>
+        <button class='talon replace_all' tabindex='6' lang='m000D'>Replace All</button>
+      </div>
+    </div>
+  </div>
+
+  <div class='talon_output'>
+    <div class='talon_ud_silder'></div>
+    <pre class='talon_output_content talon_box_border'
+         style='border-top: 0;'></pre>
+    <div class='buttons'>
+      <button class='talon clear small' lang='m000E'>Clear</button>
+      <button class='talon hide small' lang='m000F'>Hide</button>
+    </div>
+  </div>
+
+  <div class='talon_state'>
+    <div class='talon_state_default'>
+      <b class='talon_quick'>F1</b> <span lang='m000G'>HELP</span>
+      <b class='talon_quick'>F8</b> <span lang='m000H'>FILELIST</span>
+      <b class='talon_quick'>F9</b> <span lang='m000I'>OUTPUT</span>
+      <b class='talon_quick'>CTRL+,</b> <span lang='m000J'>SETE</span>
+    </div>
+    <div class='talon_state_small'></div>
+  </div>
+
+<!-- ============================== 对话框生成 ============================== -->
+
+  <div class="talon_dialog center talon_hide talon_welcome">
+    <div class="_border text_center" style='padding: 50px 100px;'>
+      <h1>Talon IDE</h1> <br/>
+      <div>Version <span class='talon_version'></span></div>
+      <div>Copyright (c) 2014 - 2017</div>
+      <div>Made BY <a href='https://github.com/yanmingsohu' target='_blank'>Yanming</a>, Inc.</div>
+      <div class='talon_button_group'>
+        <button class='talon ok' style='margin-left: 300px;'>OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="talon_dialog center talon_hide talon_select_fs">
+    <div class="_border" style='width: 500px;'>
+      <h3 lang='d0101'>Choose a Project:</h3>
+      <content>
+        <select class='talon' size='15'>
+        </select>
+      </content>
+      <div class='talon_button_group'>
+        <button class='talon ok' lang='d0001'>OK</button>
+        <button class='talon cancel' lang='d0002'>Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="talon_dialog center talon_hide talon_yes_no">
+    <div class="_border" style='width: 500px;'>
+      <h3 class='title'>?</h3>
+      <content>
+        <div class='message'></div>
+        <div class='filename'></div>
+      </content>
+      <div class='talon_button_group'>
+        <button class='talon yes' lang='d0003'>Yes</button>
+        <button class='talon no' lang='d0004'>No</button>
+        <button class='talon cancel' lang='d0002'>Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="talon_dialog center talon_hide talon_input">
+    <div class="_border" style='width: 500px;'>
+      <h3 class='title'>?</h3>
+      <content>
+        <div class='message'></div>
+        <input class='talon' type='text'/>
+      </content>
+      <div class='talon_button_group'>
+        <button class='talon ok' lang='d0001'>OK</button>
+        <button class='talon cancel' lang='d0002'>Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class='talon_hide talon_diff_main_template'>
+    <div class='talon_rl_silder'></div>
+    <div class='talon_diff_main talon_column'>
+      <span class='msg' lang='d0102'>The Remote file content</span>
+      <pre class='changed_file'></pre>
+      <div class='botton_contain'>
+        <button class='talon manual small' lang='d0103'>Manual Margin</button>
+        <button class='talon local small'  lang='d0104'>Use Local</button>
+        <button class='talon remote small' lang='d0105'>Use Remote</button>
+        <button class='talon close small'  lang='d0005'>Close</button>
+      </div>
+      <pre class='diff_output'></pre>
+      <span class='msg' lang='d0106'>The changed patch</span>
+    </div>
+  </div>
+
+  <div class="talon_dialog center talon_hide talon_loading">
+    <div class="_border">
+        <span class='message' lang='d0107'>Loading</span>
+        <span class='x'>...</span>
+    </div>
+  </div>
+
+  <div class="talon_dialog center talon_hide talon_upfile">
+    <div class="_border">
+      <fieldset class="__upload_zone">
+        <legend lang='d0108'>Drop a file inside...</legend>
+        <div class='fp-upload-field'>
+          <p><span lang='d0109'>Or click here to</span> <em lang='d010A'>Browse...</em></p>
+        </div>
+        <div class='_progress'></div>
+      </fieldset>
+      <div><span lang='d010B'>Upfile To:</span> <b class='_upbase filename'></b></div>
+      <div class='talon_button_group'>
+        <button class='talon small cancel' lang='d0002'>Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="talon_dialog center talon_hide talon_compare_dialog">
+    <div class="_border" style='width: 500px;'>
+      <h3 lang='d010C'>Choose a buffer TAB for compare</h3>
+      <content lang='d010D'>Click on the file you want to compare the TAB</content>
+      <div class='talon_button_group'>
+        <button class='talon small cancel' lang='d0002'>Cancel</button>
+      </div>
+    </div>
+  </div>
+
+<!-- ============================== 子菜单生成 ============================== -->
+<div class='talon_system_menu'>
+  <!-- 目录树右键菜单 -->
+  <div class='talon_sub_menu_container' id='talon_tree_menu'>
+    <span class='talon_menu_item' menu_event='new_file' lang='m0101'>New File..</span>
+    <span class='talon_menu_item' menu_event='create_dir' lang='m0102'>Create dir..</span>
+    <span class='talon_menu_item' menu_event='del_file' lang='m0103'>Delete File</span>
+    <span class='talon_menu_item' menu_event='remove_dir' lang='m0104'>Remove directory</span>
+    <hr/>
+    <span class='talon_menu_item' menu_event='upfile' lang='m0105'>Upload..</span>
+    <span class='talon_menu_item' menu_event='download' lang='m0106'>Download</span>
+    <span class='talon_menu_item' menu_event='unzip' lang='m0107'>Unzip file</span>
+    <span class='talon_menu_item' menu_event='zip' lang='m0108'>Zip file/directory</span>
+    <hr/>
+    <span class='talon_menu_item' menu_event='copy_to' lang='m0109'>Copy to..</span>
+    <span class='talon_menu_item' menu_event='move_to' lang='m010A'>Move to..</span>
+    <span class='talon_menu_item' menu_event='close_project' lang='m010B'>Save &amp; Close Project</span>
+  </div>
+
+  <div class='talon_sub_menu_container' parent='#talon_sub_menu_file'>
+    <span class='talon_menu_item' menu_event='file_open' lang='m0201'>Open...</span>
+    <span class='talon_menu_item' menu_event='file_save' lang='m0202'>Save</span>
+    <!-- <span class='talon_menu_item' menu_event='' lang='m0203'>Save As...</span> -->
+    <span class='talon_menu_item' menu_event='file_save_all' lang='m0204'>Save All</span>
+    <span class='talon_menu_item' menu_event='file_close' lang='m0205'>Close</span>
+    <span class='talon_menu_item' menu_event='file_close_all' lang='m0206'>Close All</span>
+    <hr/>
+    <span class='talon_menu_item' menu_event='' lang='m0207'>Settings</span>
+    <span class='talon_menu_item' menu_event='file_config' lang='m0208'>Config file</span>
+    <hr/>
+    <span class='talon_menu_item' menu_event='file_exit' lang='m0209'>Exit</span>
+  </div>
+
+  <div class='talon_sub_menu_container' parent='#talon_sub_menu_edit'>
+    <span class='talon_menu_item' menu_event='edit_undo' lang='m0301'>Undo</span>
+    <span class='talon_menu_item' menu_event='edit_redo' lang='m0302'>Redo</span>
+    <hr/>
+    <span class='talon_menu_item' menu_event='edit_cut' lang='m0303'>Cut</span>
+    <span class='talon_menu_item' menu_event='edit_copy' lang='m0304'>Copy</span>
+    <span class='talon_menu_item' menu_event='edit_paste' lang='m0305'>Paste</span>
+    <hr/>
+    <span class='talon_menu_item' menu_event='edit_comment' lang='m0306'>Toggle Comments</span>
+    <span class='talon_menu_item' menu_event='edit_toupper' lang='m0307'>To Upper Case</span>
+    <span class='talon_menu_item' menu_event='edit_tolower' lang='m0308'>To Lower Case</span>
+    <hr/>
+    <span class='talon_menu_item' menu_event='edit_unix_mode' lang='m0309'>Unix Line Mode (LF)</span>
+    <span class='talon_menu_item' menu_event='edit_win_mode' lang='m030A'>Window Line Mode (CR+LF)</span>
+    <hr/>
+    <span class='talon_menu_item' menu_event='edit_togg_book' lang='m030B'>Toggle Bookmark</span>
+    <span class='talon_menu_item' menu_event='edit_next_book' lang='m030C'>Jump to next Bookmark</span>
+    <span class='talon_menu_item' menu_event='edit_prev_book' lang='m030D'>Jump to previous Bookmark</span>
+    <hr/>
+    <span class='talon_menu_item' menu_event='edit_goto_line' lang='m030E'>Goto Line</span>
+    <span class='talon_menu_item' menu_event='edit_compare' lang='m030F'>Compare Buffer content</span>
+  </div>
+
+  <div class='talon_sub_menu_container' parent='#talon_sub_menu_view'>
+    <span class='talon_menu_item' menu_event='view_full_screen' lang='m0401'>Toggle Full Screen</span>
+    <span class='talon_menu_item' menu_event='view_show_tree' lang='m0402'>Toggle Tree View</span>
+    <span class='talon_menu_item' menu_event='view_show_out' lang='m0403'>Toggle Output View</span>
+    <span class='talon_menu_item' menu_event='view_soft_warp' lang='m0404'>Toggle Soft Warp</span>
+    <hr/>
+    <span class='talon_menu_item' menu_event='view_inc_font' lang='m0405'>Increase Font Size</span>
+    <span class='talon_menu_item' menu_event='view_dec_font' lang='m0406'>Decrease Font Size</span>
+    <span class='talon_menu_item' menu_event='view_reset_font' lang='m0407'>Reset Font Size</span>
+  </div>
+
+  <div class='talon_sub_menu_container' parent='#talon_sub_menu_select'>
+    <span class='talon_menu_item' menu_event='select_above' lang='m0501'>Add selction Above</span>
+    <span class='talon_menu_item' menu_event='select_below' lang='m0502'>Add selction Below</span>
+    <span class='talon_menu_item' menu_event='select_sil' lang='m0503'>Split Into Lines</span>
+    <span class='talon_menu_item' menu_event='select_single' lang='m0504'>Single Selection</span>
+    <hr/>
+    <span class='talon_menu_item' menu_event='select_to_top' lang='m0505'>Select to Top</span>
+    <span class='talon_menu_item' menu_event='select_to_bottom' lang='m0506'>Select to Bottom</span>
+    <hr/>
+    <span class='talon_menu_item' menu_event='select_line' lang='m0507'>Select Line</span>
+    <span class='talon_menu_item' menu_event='select_word' lang='m0508'>Select Word</span>
+    <span class='talon_menu_item' menu_event='select_beg_word' lang='m0509'>Select Beginning of Word</span>
+    <span class='talon_menu_item' menu_event='select_beg_line' lang='m0511'>Select Beginning of Line</span>
+    <span class='talon_menu_item' menu_event='select_end_word' lang='m0512'>Select End of Word</span>
+    <span class='talon_menu_item' menu_event='select_end_line' lang='m0513'>Select End of Line</span>
+    <span class='talon_menu_item' menu_event='select_all' lang='m0514'>Select All</span>
+  </div>
+
+  <div class='talon_sub_menu_container' parent='#talon_sub_menu_find'>
+    <span class='talon_menu_item' menu_event='find_buffer' lang='m0601'>Find in Buffer</span>
+    <span class='talon_menu_item' menu_event='find_next' lang='m0602'>Find Next</span>
+    <span class='talon_menu_item' menu_event='find_prev' lang='m0603'>Find Previous</span>
+    <hr/>
+    <span class='talon_menu_item' menu_event='find_in_proj' lang='m0604'>Find in Project</span>
+  </div>
+
+  <div class='talon_sub_menu_container' parent='#talon_sub_menu_beau'>
+    <span class='talon_menu_item' menu_event='beautify' type='html'>HTML</span>
+    <span class='talon_menu_item' menu_event='beautify' type='css'>CSS</span>
+    <span class='talon_menu_item' menu_event='beautify' type='js'>JavaScript / JSON</span>
+  </div>
+
+  <div class='talon_sub_menu_container' parent='#talon_sub_menu_lang'>
+    <span class='talon_menu_item' menu_event='lang_change' code='zh'>中文</span>
+    <span class='talon_menu_item' menu_event='lang_change' code='en'>English</span>
+    <span class='talon_menu_item' menu_event='lang_change' code='ja'>日本語で</span>
+    <span class='talon_menu_item' menu_event='lang_change' code='fr'>Français</span>
+    <span class='talon_menu_item' menu_event='lang_change' code='it'>Italiano</span>
+    <span class='talon_menu_item' menu_event='lang_change' code='ko'>한국어</span>
+    <span class='talon_menu_item' menu_event='lang_change' code='ru'>Русский язык</span>
+  </div>
+
+  <div class='talon_sub_menu_container' parent='#talon_sub_menu_help'>
+    <span class='talon_menu_item' menu_event='help_wiki' lang='m0701'>Wiki</span>
+    <span class='talon_menu_item' menu_event='help_readme' lang='m0702'>Devloper doc</span>
+    <hr/>
+    <span class='talon_menu_item' menu_event='help_about' lang='m0703'>About</span>
+  </div>
+</div>
+
+<iframe id='downloadfile' class='talon_hide' />
+
+</body>
+</html>

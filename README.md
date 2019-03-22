@@ -18,7 +18,7 @@
 # UI 接口
 
 使用 ifreame 引入 ./talon/index.html 页面, 框架应该与窗口尺寸适配, 不要有任何滚动条.
-页面接口可传递参数:
+页面接口可传递参数(通过URL上的参数进行设置):
 
 * exit_url     : 当用户点击退出按钮时, 页面切换到这个地址, 不提供窗口被关闭.
 * init_service : 服务入口地址, ide 通过这个接口来获取全部通信地址.
@@ -48,18 +48,20 @@
 ## init_service
 --------------------------------------------------------------------------------
 说明:
-  地址来自于页面参数, 请求这个地址得到其他服务的地址.
+
+  来自于页面URL参数, IDE会请求这个地址上的服务, 从而得到其他服务的地址.
 
 参数: 无
 
 返回:
-```
-  {
-    ret : 0,        Int: 0 表示成功, 其他为错误, 出错后设置 msg 消息.
-    msg : '',       String: 设置出错消息.
 
-      Object: 服务地址配置, url 如果没有 http: [hostname]:[port]
-      的部分则使用 init_service 路径中的主机和端口.
+```json
+  {
+    ret : 0,        // Int: 0 表示成功, 其他为错误, 出错后设置 msg 消息.
+    msg : '',       // String: 设置出错消息.
+
+    // Object: 服务地址配置, url 如果没有 http: [hostname]:[port]
+    // 的部分则使用 init_service 路径中的主机和端口.
     service_url : {   
       list_fs,        
       dir,
@@ -75,11 +77,11 @@
       upfile,
     },
 
-      初始化完成后, 默认打开一个 fs
+    // 初始化完成后, 默认打开一个 fs
     default_fsid : ''
-      String: 默认项目名称, 显示在文件树的根名称.
+    // String: 默认项目名称, 显示在文件树的根名称.
     default_fs_name : '',
-      String: 引入一个 js 脚本插件.
+    // String: 引入一个 js 脚本插件.
     plugin_js : '',
   }
 ```
@@ -87,19 +89,22 @@
 ## list_fs
 --------------------------------------------------------------------------------
 说明:
+
   列出所有 fs 用于选择. fs 在 UI 上体现为 project.
 
 参数: 无
 
 返回:
-```
+
+```json
   {
     ret : Int, msg : String,
     data : [{
       fsid : UUID String,
       name : String,
       service_url : {
-        /* 覆盖 init_service 中的同名配置 */
+        // 覆盖 init_service 中的同名配置
+        // 这允许每个文件有自己的文件服务接口
       }
     }],
   }
@@ -108,19 +113,21 @@
 ## dir
 --------------------------------------------------------------------------------
 说明:
+
   获取目录内容.
 
 参数:
+
   fsid: 指明 fs.  
   path: String, 路径, 默认 '/'.  
 
 返回:
-```
+```json
   {
     ret : Int, msg : String,
     data : [
-      { name: String,    文件名称
-        type: 'f/d/l',   f 文件, d 目录, l 链接
+      { name: String,    //文件名称
+        type: 'f/d/l',   //f 文件, d 目录, l 链接
       }
     ],
   }
@@ -129,70 +136,82 @@
 ## read
 --------------------------------------------------------------------------------
 说明:
+
   读取文件内容.
 
 参数:
+
   fsid: UUID, 指明 fs.  
   path: String, 文件路径.  
 
+
 返回:
+
   返回数据不是 json 而是文件本身的内容.  
   返回文件类型固定 header[Content-Type]=='application/octet-stream'  
   在 header[uptime]:Long 中设置文件最后修改时间.  
   返回码在 header[StatusCode] 中设置:  
-    * 200 成功, 并返回文件,
-    * 404 失败, 找不到文件.
-    * 406 失败, path 路径有对象但不是文件.
-    * 400 失败, 参数错误.
+  
+* 200 成功, 并返回文件,
+* 404 失败, 找不到文件.
+* 406 失败, path 路径有对象但不是文件.
+* 400 失败, 参数错误.
 
 ## write
 --------------------------------------------------------------------------------
 说明:
+
   写入文件.
 
 参数:
+
   递交的数据即是文件本身, 其他参数通过 url 来传入.  
   fsid: UUID, 指明 fs.  
   path: String, 文件路径.  
   uptime: Long, 文件最后修改时间, 如果早于远程文件日期则认为远程文件被修改, 需要执行合并, 返回码: 7.  
 
 返回:
-```
+
+```json
   { ret : Int,
     msg : String,
-    filetime : Long, 文件最后修改时间.
+    filetime : Long, //文件最后修改时间.
   }
 ```
 
 ## new_file
 --------------------------------------------------------------------------------
 说明:
+
   创建一个新文件, 如果文件已经存在会发出错误.
 
 参数:
+
   fsid: UUID, 指明 fs.  
   path: String, 文件路径.
 
 返回:
-```
+```json
   { ret : Int,
     msg : String,
-    uptime: Long, 文件最后修改时间.
+    uptime: Long, //文件最后修改时间.
   }
 ```
 
 ## new_dir
 --------------------------------------------------------------------------------
 说明:
+
   创建一个新目录, 如果目录已经存在会发出错误;  
   并不会级联创建目录, 新建目录的子目录必须存在.
 
 参数:
+
   fsid: UUID, 指明 fs.  
   path: String, 文件路径.  
 
 返回:
-```
+```json
   { ret : Int,
     msg : String,
   }
@@ -201,14 +220,16 @@
 ## del_file
 --------------------------------------------------------------------------------
 说明:
+
   删除文件/软连接, 如果文件不存在会报错.
 
 参数:
+
   fsid: UUID, 指明 fs.  
   path: String, 文件路径.  
 
 返回:
-```
+```json
   { ret : Int,
     msg : String,
   }
@@ -217,15 +238,17 @@
 ## del_dir
 --------------------------------------------------------------------------------
 说明:
+
   删除目录, 目录必须空, 否则报错.
 
 参数:
+
   fsid: UUID, 指明 fs.  
   path: String, 文件路径.  
   recursive: Bool, 如果为 true 则删除包括所有子目录和目录中的文件.  
 
 返回:
-```
+```json
   { ret : Int,
     msg : String,
   }
@@ -235,21 +258,23 @@
 ## find_in_file
 --------------------------------------------------------------------------------
 说明:
+
   在指定目录搜索文件内容字符串
 
 参数:
+
   fsid: UUID, 指明 fs.  
   path: String, 开始搜索的目录.  
   find: String, 搜索字符串.  
 
 返回:
-```
+```json
   { ret : Int,
     msg : String,
-    data : [   找到的文件列表
-      ['文件名', { 所在行列表(从0开始) : '附近文字' } ]
+    data : [   //找到的文件列表
+      ['文件名', { //所在行列表(从0开始) : '附近文字' } ]
     ],
-    skip : [   忽略的文件列表
+    skip : [   //忽略的文件列表
       ['文件名', '原因']
     ]
   }
@@ -259,16 +284,18 @@
 ## move_to
 --------------------------------------------------------------------------------
 说明:
+
   移动目录或文件, 只能在同一个项目中操作; 移动目录的速度比复制更快.  
   不可用覆盖已经存在的目标目录/文件.  
 
 参数:
+
   fsid: UUID, 指明 fs.
   path: String, 要移动的目录或文件
   to  : String, 目标地址
 
 返回:
-```
+```json
   { ret : Int,
     msg : String,
   }
@@ -278,17 +305,19 @@
 ## copy_to
 --------------------------------------------------------------------------------
 说明:
+
   复制目录或文件, 可以跨项目. 不会修改目标项目中已经存在的文件.  
   尽可能的复制文件/目录.  
 
 参数:
+
   sfsid: UUID, 指明源项目 fs.
   tfsid: UUID, 指明目地项目 fs.
   spath: String, 要移动的目录或文件
   tpath: String, 目标地址
 
 返回:
-```
+```json
   { ret : Int,
     msg : String,
     err  : [],   如果复制文件出错, 会记录出错的信息.
@@ -299,14 +328,16 @@
 ## upfile
 --------------------------------------------------------------------------------
 说明:
+
   上传文件. 不会修改已经存在的文件.
 
 参数:
+
   fsid: UUID, 指明项目 fs.  
   path: String, 文件存放位置  
 
 返回:
-```
+```json
   { ret : Int,
     msg : String,
   }
@@ -316,16 +347,18 @@
 ## zip
 --------------------------------------------------------------------------------
 说明:
+
   压缩文件/目录.  
 
 参数:
+
   fsid: UUID, 指明项目 fs.  
   zfsid:UUID, 指明 zip 文件的 fs, 如果无效使用 fsid.  
   path: String, 文件存放位置  
   zip : String, 压缩文件位置  
 
 返回:
-```
+```json
   { ret : Int,
     msg : String,
   }
@@ -335,16 +368,18 @@
 ## unzip
 --------------------------------------------------------------------------------
 说明:
+
   解压文件.
 
 参数:
+
   fsid: UUID, 指明项目 fs.  
   zfsid:UUID, 指明 zip 文件的 fs, 如果无效使用 fsid.  
   path: String, 解压文件存放位置  
   zip : String, 压缩文件位置  
 
 返回:
-```
+```json
   { ret : Int,
     msg : String,
   }
@@ -382,7 +417,8 @@
 
 ### Object key_binding
 
-  [参考 binding API](../keys/Bindings.html)
+  [参考 binding API](https://github.com/bitwalker/keys.js)
+  [本地](../keys/Bindings.html)
 
 ### Function on(name, callback)
 ### Function off(name, callback)
@@ -398,7 +434,8 @@
 
 ### Function add_code_editor(conf)
 
-  创建 ACE 编辑器 [ACE WIKI](../ace-api/index.html)
+  [创建 ACE 编辑器](https://github.com/ajaxorg/ace)
+  [本地](../ace-api/index.html)
 
   conf.name  -- TAB 显示名称  
   conf.mode  -- 编辑器模式. 默认 text  
@@ -488,15 +525,18 @@
   加载菜单并绑定事件, 返回 `TalonMenuItem` 对象.
 
   .talon_sub_menu_container:  
+  
      在 jparent 中寻找这个元素作为子菜单容器,  
      当 parent 属性指定的选择器选择的元素被点击, 此菜单被激活;  
      如果用 parent 找不到元素且设置了 name 属性, 则会使用 name 属性创建元素.  
 
   .talon_menu_item:  
+  
      在 .talon_sub_menu_container 选择这个元素作为菜单项;  
      菜单项的 menu_event 属性将被关联到 `menu_event` 变量中的事件处理函数.  
 
-  菜单处理函数:  
+  菜单处理函数: 
+  
      Function init(menu, talon_exports)  
          返回当菜单被触发时的回调函数 Function onclick(event, curr_tab)  
          函数名应该有意义以便调试, `onclick` 名称仅作示例不要使用.   

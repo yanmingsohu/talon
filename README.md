@@ -5,6 +5,9 @@
 
 ![屏幕截图1](https://github.com/yanmingsohu/talon/blob/master/screen1.jpg)
 ![屏幕截图2](https://github.com/yanmingsohu/talon/blob/master/screen2.jpg)
+![屏幕截图3](https://github.com/yanmingsohu/talon/blob/master/screen3.jpg)
+
+[为 Talon IDE 设计的小型后端](https://github.com/yanmingsohu/talon-server)
 
 
 * ok 文件被改变后读取当前文件进入临时editor,并显示出不同之处
